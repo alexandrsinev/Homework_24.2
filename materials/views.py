@@ -21,7 +21,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         course = serializer.save()
-        course.lesson_owner = self.request.user
+        course.course_owner = self.request.user
         course.save()
 
     def get_permissions(self):
