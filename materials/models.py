@@ -10,6 +10,7 @@ class Course(models.Model):
     preview = models.ImageField(upload_to='preview/', verbose_name='Превью', **NULLABLE)
     description = models.TextField(verbose_name='Описание')
     course_owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE)
+    last_update = models.DateTimeField(verbose_name="Последнее обновление", **NULLABLE)
 
     def __str__(self):
         return f'{self.title}'
