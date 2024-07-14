@@ -1,5 +1,8 @@
+from datetime import *
+
 from django.http import response
 from django.shortcuts import render
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPIView, \
     get_object_or_404
@@ -12,6 +15,7 @@ from materials.paginators import MaterialsPagination
 from materials.permissions import IsUser
 from materials.serialaizers import CourseSerializer, LessonSerializer, SubscriptionSerializer
 from materials.permissions import IsModer
+from materials.tasks import send_update_course_mail
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -32,6 +36,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         if self.action in ['update', 'partial_update', 'list', 'retrieve']:
             self.permission_classes = [IsAuthenticated | IsModer,]
         return super().get_permissions()
+
+    def perform_update(self, serializer):
+        course = serializer.save()
+        course_id = course.id
+        course.last_update = datetime.now(timezone.utc)
+        course.save()
+        send_update_course_mail.delay(course_id)
 
 
 class LessonCreateAPIView(CreateAPIView):
